@@ -1,5 +1,6 @@
 import os
 
+import asyncpg
 from aiohttp import ClientSession
 from discord import Embed, Intents
 from discord.ext import commands
@@ -16,8 +17,9 @@ class Bot(commands.Bot):
         intents.members = True
 
         self.http_session = ClientSession()
+        self.db_pool = None
+
         super().__init__(command_prefix=constants.PREFIX, intents=intents)
-        self.load_extensions()
 
     def load_extensions(self) -> None:
         """Load all the extensions in the exts/ folder."""
@@ -42,7 +44,15 @@ class Bot(commands.Bot):
     async def on_ready(self) -> None:
         """Ran when the bot has connected to discord and is ready."""
         logger.info("Bot online")
+        self.load_extensions()
+
         await self.startup_greeting()
+
+    async def login(self, *args, **kwargs) -> None:
+        """Setup database connection before logging into discord."""
+        self.db_pool = await asyncpg.create_pool(constants.DATABASE_URL)
+
+        await super().login(*args, **kwargs)
 
     async def startup_greeting(self) -> None:
         """Announce presence to the devlog channel."""
@@ -58,3 +68,5 @@ class Bot(commands.Bot):
 
         if self.http_session:
             await self.http_session.close()
+        if self.db_pool:
+            await self.db_pool.close()
