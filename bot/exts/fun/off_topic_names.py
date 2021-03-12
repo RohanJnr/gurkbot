@@ -23,7 +23,7 @@ class OffTopicNames(Cog):
         """Commands for managing off-topic-channel names."""
         await ctx.send_help(ctx.command)
 
-    @off_topic_names.command(name="add")
+    @off_topic_names.command(name="add", aliases=("a",))
     async def add_ot_name(self, ctx: Context, name: OffTopicName) -> None:
         """Add off topic channel name."""
         async with self.bot.db_pool.acquire() as connection:
@@ -33,7 +33,7 @@ class OffTopicNames(Cog):
                 )
         await ctx.send(f"`{name}` has been added!")
 
-    @off_topic_names.command(name="del")
+    @off_topic_names.command(name="del", aliases=("remove", "delete"))
     async def delete_ot_name(self, ctx: Context, name: OffTopicName) -> None:
         """Delete off topic channel name."""
         async with self.bot.db_pool.acquire() as connection:
